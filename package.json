@@ -1,0 +1,22 @@
+{
+  "name": "kindose",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node dev.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check api/care.mjs && node --check public/app.js",
+    "test:ui": "node scripts/e2e.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "vercel": "latest"
+  },
+  "overrides": {
+    "zod": "4.6.7"
+  }
+}

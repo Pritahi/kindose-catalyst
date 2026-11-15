@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f8f6f1" />
+    <title>KinDose — A little care. A little closer.</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="mobile-head">
+      <a class="brand" href="#today"
+        ><span class="logo" aria-hidden="true">✳</span
+        ><span
+          ><b>KinDose</b><small>A little care. A little closer.</small></span
+        ></a
+      ><button
+        id="largeMobile"
+        class="icon-btn"
+        aria-label="Toggle senior reading mode"
+      >
+        Aa
+      </button>
+    </header>
+    <div id="app" class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="#today"
+          ><span class="logo" aria-hidden="true">✳</span
+          ><span
+            ><b>KinDose</b><small>A little care. A little closer.</small></span
+          ></a
+        >
+        <nav id="nav" aria-label="Main navigation">
+          <button data-view="today" class="nav-item active">
+            <span>◷</span>Today</button
+          ><button data-view="medications" class="nav-item">
+            <span>＋</span>Medications</button
+          ><button data-view="appointments" class="nav-item">
+            <span>▦</span>Appointments</button
+          ><button data-view="circle" class="nav-item">
+            <span>♧</span>Care circle</button
+          ><button data-view="notes" class="nav-item">
+            <span>▤</span>Care notes</button
+          ><button data-view="reminders" class="nav-item">
+            <span>◉</span>Reminders
+          </button>
+        </nav>
+        <div class="side-bottom">
+          <div class="side-note">
+            <b>Care, on your terms</b>
+            <p>Your circle, your choices. Privacy is part of good care.</p>
+          </div>
+          <small>Prototype · not medical advice</small>
+        </div>
+      </aside>
+      <main id="main" tabindex="-1"><div id="content"></div></main>
+    </div>
+    <nav class="mobile-tabs" id="mobileNav" aria-label="Main navigation"></nav>
+    <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <dialog id="authDialog">
+      <form id="authForm" method="dialog">
+        <button type="button" class="dialog-x" aria-label="Close">×</button>
+        <div id="authBody"></div>
+      </form>
+    </dialog>
+    <dialog id="editDialog">
+      <form id="editForm" method="dialog">
+        <button type="button" class="dialog-x" aria-label="Close">×</button>
+        <div id="editBody"></div>
+      </form>
+    </dialog>
+    <script src="app.js" defer></script>
+  </body>
+</html>
