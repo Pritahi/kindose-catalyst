@@ -1,0 +1,10 @@
+.git
+.local-data
+test-results
+playwright-report
+.env*
+node_modules
+docs
+test
+scripts
+.github
