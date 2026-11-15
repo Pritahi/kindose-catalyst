@@ -28,6 +28,8 @@ For a full account flow, create a circle using a fictional name and a passphrase
 
 Email is deliberately restricted to deployment-approved test recipients. Never add an unconsenting recipient. Delivery requires the sender and scheduler setup described in [deployment](docs/DEPLOYMENT.md). Preview and failure records are not proof of delivery.
 
+**Hosted demo status:** automatic email sending and the recurring reminder scheduler are disabled. One separate harmless test email using fictional data was delivered to the builder's own inbox. This verifies the provider adapter, not continuous reminder operation. The hosted app provides reminder previews only.
+
 ## Run locally
 
 Node.js 22 or newer:
