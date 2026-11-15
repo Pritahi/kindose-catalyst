@@ -74,3 +74,12 @@ Before any real pilot: independent security and accessibility audits, verified i
 ## Build disclosure
 
 Built with AI assistance, including Arena for frontend generation and correction, followed by integration testing and review. The app does not use AI to prescribe medication or change doses. All sample people and health records are fictional.
+
+## Browser regression tests
+
+```sh
+npx playwright install chromium
+npm run test:ui
+```
+
+These start a local server and cover sample flows at desktop/mobile sizes, plus private-circle creation, member invitation, sign-out/sign-in, role controls, revocation and deletion. Screenshots and fictional local records stay under ignored `test-results/`.

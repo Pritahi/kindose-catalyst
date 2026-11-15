@@ -214,12 +214,19 @@ export default async function handler(req, res) {
       if (!["taken", "skipped", "undo"].includes(body.status))
         throw new Error("Invalid dose status");
       let old = c.logs.find((l) => l.doseId === dose.id);
-      if (old?.status === "taken" && body.status !== "taken") {
+      let stockConsumed =
+        old?.status === "taken" ? old.stockConsumed !== false : false;
+      if (
+        old?.status === "taken" &&
+        old.stockConsumed !== false &&
+        body.status !== "taken"
+      ) {
         let med = c.medications.find((m) => m.id === dose.medicationId);
         med.stock++;
       }
       if (body.status === "taken" && old?.status !== "taken") {
         let med = c.medications.find((m) => m.id === dose.medicationId);
+        stockConsumed = med.stock > 0;
         med.stock = Math.max(0, med.stock - 1);
       }
       c.logs = c.logs.filter((l) => l.doseId !== dose.id);
@@ -230,6 +237,7 @@ export default async function handler(req, res) {
           medicationId: dose.medicationId,
           date: dose.date,
           status: body.status,
+          stockConsumed: body.status === "taken" && stockConsumed,
           at: new Date().toISOString(),
           by: me.name,
           note: clean(body.note, 240),
@@ -264,6 +272,8 @@ export default async function handler(req, res) {
       c.appointments = c.appointments.filter((a) => a.id !== body.id);
       record(c, me, "Removed an appointment");
     } else if (action === "note") {
+      if (body.kind === "preference" && me.role !== "elder")
+        throw new Error("Only the elder can record their own care preference");
       c.notes.unshift({
         id: uid(),
         text: requireText(body.text, "Note", 800),

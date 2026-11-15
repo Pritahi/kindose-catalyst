@@ -81,11 +81,9 @@
             }),
           })
         : await fetch("/api/care", { credentials: "include" });
-      let data = await res
-        .json()
-        .catch(() => ({
-          error: "The server returned an unreadable response.",
-        }));
+      let data = await res.json().catch(() => ({
+        error: "The server returned an unreadable response.",
+      }));
       if (res.status === 409) {
         busy = false;
         try {
@@ -119,6 +117,7 @@
       if (data.circle) data = data.circle;
       if (data && data.me && data.version !== undefined) {
         state = data;
+        if (auth) view = "today";
         render();
       } else if (action === "logout" || action === "deleteCircle") {
         state = null;
@@ -216,7 +215,7 @@
         .join("") ||
       `<div class="empty">No doses are scheduled for today. Your circle can add a medication schedule whenever you're ready.</div>`;
     return outer(
-      `<section class="hero"><span class="eyebrow">${esc(todayStr()).toUpperCase()}</span><h1>A gentler rhythm for today.</h1><p>${esc(greet())}, ${esc(state.profile?.name || state.me.name)}. One small check-in at a time. Your care circle is here with you.</p></section><div class="grid stats"><div class="card"><div><div class="stat-label">Today's doses</div><div class="stat-note">taken so far</div></div><div class="stat-value">${taken}<span class="stat-note"> / ${rows.length}</span></div></div><div class="card"><div><div class="stat-label">Needs a check-in</div><div class="stat-note">doses marked missed</div></div><div class="stat-value">${missed}</div></div><div class="card"><div><div class="stat-label">Adherence</div><div class="stat-note">since circle started, last 7 days</div></div><div class="stat-value">${state.adherence && Number(state.adherence.expected) > 0 ? `${esc(state.adherence.percent)}%` : "No data"}<span class="stat-note">${state.adherence?.expected ? "" : "No data yet"}</span></div><div class="stat-note">Next appointment: ${a ? esc(dateFmt(a.datetime, state.profile?.timezone)) : "Nothing scheduled"}</div></div></div><div class="grid cols2"><section class="card"><div class="section-head"><h2>Today's rhythm</h2><span class="muted">${esc(state.profile?.timezone || "UTC")}</span></div><div class="timeline">${timeline}</div><p class="notice">If you miss a dose, follow your prescriber's advice. Do not double a dose.</p></section><div class="side-stack"><section class="card"><h3>A little note to remember</h3><p>${esc(state.profile?.preferences || "Your preferences will appear here when your care circle adds them.")}</p></section><section class="card"><h3>Coming up</h3>${a ? `<strong>${esc(a.title)}</strong><p class="muted">${esc(dateFmt(a.datetime, state.profile?.timezone))}<br>${esc(a.location || "Location to be confirmed")}</p>` : `<p class="muted">No upcoming appointment yet.</p>`}</section><section class="card"><h3>Your care circle</h3>${
+      `<section class="hero"><span class="eyebrow">${esc(todayStr()).toUpperCase()}</span><h1>A gentler rhythm for today.</h1><p>${esc(greet())}, ${esc(state.profile?.name || state.me.name)}. One small check-in at a time. Your care circle is here with you.</p></section><div class="grid stats"><div class="card"><div><div class="stat-label">Today's doses</div><div class="stat-note">taken so far</div></div><div class="stat-value">${taken}<span class="stat-note"> / ${rows.length}</span></div></div><div class="card"><div><div class="stat-label">Needs a check-in</div><div class="stat-note">doses marked missed</div></div><div class="stat-value">${missed}</div></div><div class="card"><div><div class="stat-label">Adherence</div><div class="stat-note">current schedule, last 7 days</div></div><div class="stat-value">${state.adherence && Number(state.adherence.expected) > 0 ? `${esc(state.adherence.percent)}%` : "No data"}<span class="stat-note">${state.adherence?.expected ? "" : "No data yet"}</span></div><div class="stat-note">Next appointment: ${a ? esc(dateFmt(a.datetime, state.profile?.timezone)) : "Nothing scheduled"}</div></div></div><div class="grid cols2"><section class="card"><div class="section-head"><h2>Today's rhythm</h2><span class="muted">${esc(state.profile?.timezone || "UTC")}</span></div><div class="timeline">${timeline}</div><p class="notice">If you miss a dose, follow your prescriber's advice. Do not double a dose.</p></section><div class="side-stack"><section class="card"><h3>A little note to remember</h3><p>${esc(state.profile?.preferences || "Your preferences will appear here when your care circle adds them.")}</p></section><section class="card"><h3>Coming up</h3>${a ? `<strong>${esc(a.title)}</strong><p class="muted">${esc(dateFmt(a.datetime, state.profile?.timezone))}<br>${esc(a.location || "Location to be confirmed")}</p>` : `<p class="muted">No upcoming appointment yet.</p>`}</section><section class="card"><h3>Your care circle</h3>${
         (state.members || [])
           .filter((m) => m.active)
           .map(
@@ -275,12 +274,12 @@
               )
               .join("")}</div></section>`
           : ""
-      }<div class="grid cols2" style="margin-top:18px"><section class="card"><h2>${esc(p.name || "Circle profile")}</h2><p><strong>Age</strong> · ${esc(p.age || "Not provided")}</p><p><strong>Timezone</strong> · ${esc(p.timezone || "UTC")}</p><p><strong>Allergy information</strong><br>${esc(p.allergies || "None recorded")}</p><p><strong>Emergency contact</strong><br>${esc(p.emergencyContact || "Not provided")}</p><p><strong>Preferences</strong><br>${esc(p.preferences || "No preferences recorded")}</p>${isElder() ? '<button class="btn secondary" id="editProfile">Edit profile</button>' : ""}<p class="notice">Fictional prototype data only. No real health data.</p></section><section class="card"><h2>People in this circle</h2>${members.map((m) => `<div class="member-row"><span class="avatar">${esc((m.name || "?")[0])}</span><div class="member-info"><strong>${esc(m.name)}</strong><div class="pill">${esc(prettyRole(m.role))} · ${m.active ? "Active" : "Inactive"}${m.email ? " · " + esc(m.email) : ""}</div></div>${isElder() && !demo && m.id !== state.me.id ? `<button class="quiet" data-revoke="${esc(m.id)}">Revoke</button>` : ""}</div>`).join("")}${!demo ? `<hr class="separator"><strong>Circle ID</strong><div class="codebox">${esc(state.id)}</div><p class="muted">Share this ID and the person's passphrase privately. Each invite should use a different passphrase.</p>${isElder() ? '<button id="inviteBtn" class="btn secondary">Invite a person</button>' : ""}` : ""}</section><section class="card"><h2>Privacy choices</h2><p>Choose what works for your circle.</p>${isElder() ? `<label class="checkline"><input type="checkbox" id="alerts" ${state.consent?.familyAlerts ? "checked" : ""}> Family email alerts</label><label class="checkline"><input type="checkbox" id="aiConsent" ${state.consent?.ai ? "checked" : ""}> Allow AI-assisted handoff</label><p class="notice">When enabled, a short summary of notes and care facts is sent to the AI provider. Not medical advice. AI is optional.</p>` : `<p class="muted">Only the elder can change these choices.</p>`}</section>${isElder() && !demo ? `<section class="card"><h2>Close this circle</h2><p>Deleting removes this circle and its associated information. This cannot be undone.</p><button id="deleteCircle" class="btn danger">Delete circle</button></section>` : ""}</div>`,
+      }<div class="grid cols2" style="margin-top:18px"><section class="card"><h2>${esc(p.name || "Circle profile")}</h2><p><strong>Age</strong> · ${esc(p.age || "Not provided")}</p><p><strong>Timezone</strong> · ${esc(p.timezone || "UTC")}</p><p><strong>Allergy information</strong><br>${esc(p.allergies || "None recorded")}</p><p><strong>Emergency contact</strong><br>${esc(p.emergencyContact || "Not provided")}</p><p><strong>Preferences</strong><br>${esc(p.preferences || "No preferences recorded")}</p>${isElder() ? '<button class="btn secondary" id="editProfile">Edit profile</button>' : ""}<p class="notice">Fictional prototype data only. No real health data.</p></section><section class="card"><h2>People in this circle</h2>${members.map((m) => `<div class="member-row"><span class="avatar">${esc((m.name || "?")[0])}</span><div class="member-info"><strong>${esc(m.name)}</strong><div class="pill">${esc(prettyRole(m.role))} · ${m.active ? "Active" : "Inactive"}${m.email ? " · " + esc(m.email) : ""}</div></div>${isElder() && !demo && m.id !== state.me.id ? `<button class="quiet" data-revoke="${esc(m.id)}">Revoke</button>` : ""}</div>`).join("")}${!demo ? `<hr class="separator"><strong>Circle ID</strong><div class="codebox">${esc(state.id)}</div><p class="muted">Share this ID and the person's passphrase privately. Each invite should use a different passphrase.</p>${isElder() ? '<button id="inviteBtn" class="btn secondary">Invite a person</button>' : ""}` : ""}</section><section class="card"><h2>Privacy choices</h2><p>Choose what works for your circle.</p>${isElder() ? `<label class="checkline"><input type="checkbox" id="alerts" ${state.consent?.familyAlerts ? "checked" : ""}> Family email alerts</label><label class="checkline"><input type="checkbox" id="aiConsent" ${state.consent?.ai ? "checked" : ""}> Allow AI-assisted handoff</label><p class="notice">When enabled and configured, care facts, preferences and recent notes are sent to Groq for a handoff summary. Not medical advice. AI is optional.</p>` : `<p class="muted">Only the elder can change these choices.</p>`}</section>${isElder() && !demo ? `<section class="card"><h2>Close this circle</h2><p>Deleting removes this circle and its associated information. This cannot be undone.</p><button id="deleteCircle" class="btn danger">Delete circle</button></section>` : ""}</div>`,
     );
   }
   function renderNotes() {
     return outer(
-      `<h1 class="headline">Care notes</h1><p class="subhead">Preferences and useful notes, shared with your circle.</p><div class="grid cols2"><section class="card"><h2>Preferences</h2><p>${esc(state.profile?.preferences || "No preference has been added yet.")}</p>${isElder() ? '<button class="btn secondary" id="editProfile">Edit preferences</button>' : ""}<hr class="separator"><h2>Add a note</h2><form id="noteForm"><label class="field"><span>Note</span><textarea name="text" required maxlength="800"></textarea></label><label class="field"><span>Kind</span><select name="kind"><option value="note">Care note</option><option value="preference">Preference</option></select></label><button class="btn">Save note</button></form></section><section class="card"><h2>Circle timeline</h2>${(state.notes || []).length ? (state.notes || []).map((n) => `<div class="note-item"><p>${esc(n.text)}</p><div class="note-meta">${esc(n.kind)} · ${esc(n.by)} · ${esc(dateFmt(n.at, state.profile?.timezone))}</div></div>`).join("") : '<div class="empty">Notes your circle adds will appear here.</div>'}<details><summary>Activity history</summary>${
+      `<h1 class="headline">Care notes</h1><p class="subhead">Preferences and useful notes, shared with your circle.</p><div class="grid cols2"><section class="card"><h2>Preferences</h2><p>${esc(state.profile?.preferences || "No preference has been added yet.")}</p>${isElder() ? '<button class="btn secondary" id="editProfile">Edit preferences</button>' : ""}<hr class="separator"><h2>Add a note</h2><form id="noteForm"><label class="field"><span>Note</span><textarea name="text" required maxlength="800"></textarea></label><label class="field"><span>Kind</span><select name="kind"><option value="note">Care note</option>${isElder() ? '<option value="preference">My preference</option>' : ""}</select></label><button class="btn">Save note</button></form></section><section class="card"><h2>Circle timeline</h2>${(state.notes || []).length ? (state.notes || []).map((n) => `<div class="note-item"><p>${esc(n.text)}</p><div class="note-meta">${esc(n.kind)} · ${esc(n.by)} · ${esc(dateFmt(n.at, state.profile?.timezone))}</div></div>`).join("") : '<div class="empty">Notes your circle adds will appear here.</div>'}<details><summary>Activity history</summary>${
         (state.audit || [])
           .slice()
           .reverse()
@@ -453,22 +452,20 @@
           (b.onclick = () =>
             api("dose", { doseId: b.dataset.dose, status: b.dataset.status })),
       );
-    document
-      .querySelectorAll("[data-skip]")
-      .forEach(
-        (b) =>
-          (b.onclick = () =>
-            openEdit(
-              "Skip this dose",
-              `<p>Add a note if you'd like.</p><label class="field"><span>Note</span><textarea name="note"></textarea></label>`,
-              async (fd) =>
-                !!(await api("dose", {
-                  doseId: b.dataset.skip,
-                  status: "skipped",
-                  note: fd.get("note"),
-                })),
-            )),
-      );
+    document.querySelectorAll("[data-skip]").forEach(
+      (b) =>
+        (b.onclick = () =>
+          openEdit(
+            "Skip this dose",
+            `<p>Add a note if you'd like.</p><label class="field"><span>Note</span><textarea name="note"></textarea></label>`,
+            async (fd) =>
+              !!(await api("dose", {
+                doseId: b.dataset.skip,
+                status: "skipped",
+                note: fd.get("note"),
+              })),
+          )),
+    );
     $("#addMed")?.addEventListener("click", () => medForm());
     document
       .querySelectorAll("[data-edit-med]")

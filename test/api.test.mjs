@@ -58,6 +58,12 @@ await test("API smoke flow: authentication, CRUD, roles, privacy, conflicts", as
   assert.equal(r.body.me.role, "family");
   r = await call({ action: "consent", familyAlerts: false, ai: false });
   assert.equal(r.statusCode, 403);
+  r = await call({
+    action: "note",
+    kind: "preference",
+    text: "Family cannot overwrite elder preference",
+  });
+  assert.equal(r.statusCode, 400);
   r = await call({ action: "email", email: "nobody@example.com" });
   assert.equal(r.statusCode, 400);
   r = await call({
@@ -71,6 +77,24 @@ await test("API smoke flow: authentication, CRUD, roles, privacy, conflicts", as
   });
   assert.equal(r.statusCode, 200);
   assert.equal(r.body.medications.length, 4);
+  r = await call({
+    action: "medication",
+    medication: {
+      name: "Zero-stock fictional medication",
+      dose: "1",
+      times: ["08:00"],
+      stock: 0,
+    },
+  });
+  let zero = r.body.today.find(
+    (d) => d.name === "Zero-stock fictional medication",
+  );
+  r = await call({ action: "dose", doseId: zero.id, status: "taken" });
+  r = await call({ action: "dose", doseId: zero.id, status: "undo" });
+  assert.equal(
+    r.body.medications.find((m) => m.id === zero.medicationId).stock,
+    0,
+  );
   r = await call({
     action: "appointment",
     appointment: {
